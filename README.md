@@ -21,7 +21,7 @@ A comprehensive commission and compensation calculator for GRIT sales representa
 ## Usage
 
 1. Open `login.html` in a web browser
-2. Login with your credentials (default admin: donald@forgemarketing.us / Alphateam1!)
+2. Login with your credentials 
 3. Navigate through different calculator tabs to calculate compensation
 4. Export results as PDF reports
 
