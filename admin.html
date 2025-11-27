@@ -673,7 +673,15 @@
         </div>
     </div>
 
+    <!-- Include Supabase -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    
     <script>
+        // Initialize Supabase
+        const supabaseUrl = 'https://tbntifrdpyzdtsofbclq.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRibnRpZnJkcHl6ZHRzb2ZiY2xxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQxOTYwOTYsImV4cCI6MjA3OTc3MjA5Nn0.GfHb3086SmNfrRYaNLp1JZVtlUf7SWyoCedclvf9D4w';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
         // Check authentication and admin access
         function checkAuth() {
             const session = localStorage.getItem('gritSession');
@@ -702,75 +710,111 @@
             loadUsers();
         }
 
-        // Load and display users
-        function loadUsers() {
-            const users = JSON.parse(localStorage.getItem('gritUsers') || '[]');
-            const tbody = document.getElementById('users-table-body');
+        // Load and display users from database
+        async function loadUsers() {
+            try {
+                const { data: users, error } = await supabase
+                    .from('users')
+                    .select('*')
+                    .order('created_at', { ascending: false });
 
-            if (users.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="empty-state">No users found</td></tr>';
-                return;
+                if (error) {
+                    showAlert('Failed to load users: ' + error.message, 'danger');
+                    return;
+                }
+
+                const tbody = document.getElementById('users-table-body');
+
+                if (!users || users.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="empty-state">No users found</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = users.map(user => `
+                    <tr>
+                        <td>${user.email}</td>
+                        <td><span class="role-badge role-${user.role.toLowerCase()}">${user.role}</span></td>
+                        <td>${new Date(user.created_at).toLocaleDateString()}</td>
+                        <td>
+                            <button class="btn btn-edit" onclick="editUser(${user.id})">Edit</button>
+                            <button class="btn btn-danger" onclick="deleteUser(${user.id}, '${user.email}')">Delete</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                showAlert('Failed to load users: ' + error.message, 'danger');
             }
-
-            tbody.innerHTML = users.map(user => `
-                <tr>
-                    <td>${user.email}</td>
-                    <td><span class="role-badge role-${user.role.toLowerCase()}">${user.role}</span></td>
-                    <td>${new Date(user.createdAt).toLocaleDateString()}</td>
-                    <td>
-                        <button class="btn btn-edit" onclick="editUser(${user.id})">Edit</button>
-                        <button class="btn btn-danger" onclick="deleteUser(${user.id}, '${user.email}')">Delete</button>
-                    </td>
-                </tr>
-            `).join('');
         }
 
-        // Add new user
-        document.getElementById('add-user-form').addEventListener('submit', function(e) {
+        // Add new user to database
+        document.getElementById('add-user-form').addEventListener('submit', async function(e) {
             e.preventDefault();
 
             const email = document.getElementById('new-email').value.trim();
             const password = document.getElementById('new-password').value;
             const role = document.getElementById('new-role').value;
 
-            const users = JSON.parse(localStorage.getItem('gritUsers') || '[]');
+            try {
+                // Check if email already exists
+                const { data: existingUser, error: checkError } = await supabase
+                    .from('users')
+                    .select('email')
+                    .eq('email', email)
+                    .single();
 
-            // Check if email already exists
-            if (users.some(u => u.email === email)) {
-                showAlert('A user with this email already exists', 'danger');
-                return;
+                if (existingUser) {
+                    showAlert('A user with this email already exists', 'danger');
+                    return;
+                }
+
+                // Add new user to database (storing password as plain text for now)
+                const { data: newUser, error } = await supabase
+                    .from('users')
+                    .insert([
+                        {
+                            email: email,
+                            password_hash: password, // Plain text for now
+                            role: role
+                        }
+                    ])
+                    .select()
+                    .single();
+
+                if (error) {
+                    throw error;
+                }
+
+                showAlert('User added successfully', 'success');
+                this.reset();
+                loadUsers();
+
+            } catch (error) {
+                showAlert('Failed to add user: ' + error.message, 'danger');
             }
-
-            // Generate new user ID
-            const newId = users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1;
-
-            const newUser = {
-                id: newId,
-                email: email,
-                password: password,
-                role: role,
-                createdAt: new Date().toISOString()
-            };
-
-            users.push(newUser);
-            localStorage.setItem('gritUsers', JSON.stringify(users));
-
-            showAlert('User added successfully', 'success');
-            this.reset();
-            loadUsers();
         });
 
         // Edit user
-        function editUser(userId) {
-            const users = JSON.parse(localStorage.getItem('gritUsers') || '[]');
-            const user = users.find(u => u.id === userId);
+        async function editUser(userId) {
+            try {
+                const { data: user, error } = await supabase
+                    .from('users')
+                    .select('*')
+                    .eq('id', userId)
+                    .single();
 
-            if (user) {
+                if (error || !user) {
+                    showAlert('User not found', 'danger');
+                    return;
+                }
+
                 document.getElementById('edit-user-id').value = user.id;
                 document.getElementById('edit-email').value = user.email;
                 document.getElementById('edit-password').value = '';
                 document.getElementById('edit-role').value = user.role;
                 document.getElementById('edit-modal').classList.add('show');
+
+            } catch (error) {
+                showAlert('Failed to load user: ' + error.message, 'danger');
             }
         }
 
@@ -781,7 +825,7 @@
         }
 
         // Save edited user
-        document.getElementById('edit-user-form').addEventListener('submit', function(e) {
+        document.getElementById('edit-user-form').addEventListener('submit', async function(e) {
             e.preventDefault();
 
             const userId = parseInt(document.getElementById('edit-user-id').value);
@@ -789,25 +833,40 @@
             const password = document.getElementById('edit-password').value;
             const role = document.getElementById('edit-role').value;
 
-            const users = JSON.parse(localStorage.getItem('gritUsers') || '[]');
-            const userIndex = users.findIndex(u => u.id === userId);
-
-            if (userIndex !== -1) {
+            try {
                 // Check if email is taken by another user
-                if (users.some(u => u.email === email && u.id !== userId)) {
+                const { data: existingUser, error: checkError } = await supabase
+                    .from('users')
+                    .select('id, email')
+                    .eq('email', email)
+                    .neq('id', userId)
+                    .single();
+
+                if (existingUser) {
                     showAlert('This email is already in use by another user', 'danger');
                     return;
                 }
 
-                users[userIndex].email = email;
-                users[userIndex].role = role;
+                // Prepare update data
+                const updateData = {
+                    email: email,
+                    role: role
+                };
 
                 // Only update password if a new one was provided
                 if (password) {
-                    users[userIndex].password = password;
+                    updateData.password_hash = password; // Plain text for now
                 }
 
-                localStorage.setItem('gritUsers', JSON.stringify(users));
+                // Update user in database
+                const { error } = await supabase
+                    .from('users')
+                    .update(updateData)
+                    .eq('id', userId);
+
+                if (error) {
+                    throw error;
+                }
 
                 // Update session if editing own account
                 const session = JSON.parse(localStorage.getItem('gritSession'));
@@ -822,11 +881,14 @@
                 showAlert('User updated successfully', 'success');
                 closeEditModal();
                 loadUsers();
+
+            } catch (error) {
+                showAlert('Failed to update user: ' + error.message, 'danger');
             }
         });
 
         // Delete user
-        function deleteUser(userId, email) {
+        async function deleteUser(userId, email) {
             // Prevent deleting yourself
             const session = JSON.parse(localStorage.getItem('gritSession'));
             if (session.userId === userId) {
@@ -835,12 +897,23 @@
             }
 
             if (confirm(`Are you sure you want to delete user: ${email}?`)) {
-                let users = JSON.parse(localStorage.getItem('gritUsers') || '[]');
-                users = users.filter(u => u.id !== userId);
-                localStorage.setItem('gritUsers', JSON.stringify(users));
+                try {
+                    // Delete user from database
+                    const { error } = await supabase
+                        .from('users')
+                        .delete()
+                        .eq('id', userId);
 
-                showAlert('User deleted successfully', 'success');
-                loadUsers();
+                    if (error) {
+                        throw error;
+                    }
+
+                    showAlert('User deleted successfully', 'success');
+                    loadUsers();
+
+                } catch (error) {
+                    showAlert('Failed to delete user: ' + error.message, 'danger');
+                }
             }
         }
 

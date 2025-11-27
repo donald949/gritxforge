@@ -204,9 +204,8 @@
         </div>
     </div>
 
-    <!-- Include Supabase and bcrypt -->
+    <!-- Include Supabase -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-    <script src="https://unpkg.com/bcryptjs@2.4.3/dist/bcrypt.min.js"></script>
     
     <script>
         // Initialize Supabase
@@ -240,8 +239,8 @@
                     throw new Error('Invalid email or password');
                 }
 
-                // Verify password
-                const isValidPassword = await bcrypt.compare(password, users.password_hash);
+                // For now, use direct password comparison (we'll add proper hashing later)
+                const isValidPassword = password === users.password_hash;
                 
                 if (!isValidPassword) {
                     throw new Error('Invalid email or password');
