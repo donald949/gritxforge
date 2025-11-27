@@ -204,27 +204,15 @@
         </div>
     </div>
 
+    <!-- Include Supabase and bcrypt -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/bcryptjs@2.4.3/dist/bcrypt.min.js"></script>
+    
     <script>
-        // Initialize users on first load
-        function initializeUsers() {
-            const users = localStorage.getItem('gritUsers');
-            if (!users) {
-                // Create default admin account
-                const defaultUsers = [
-                    {
-                        id: 1,
-                        email: 'donald@forgemarketing.us',
-                        password: 'Alphateam1!',
-                        role: 'Admin',
-                        createdAt: new Date().toISOString()
-                    }
-                ];
-                localStorage.setItem('gritUsers', JSON.stringify(defaultUsers));
-            }
-        }
-
-        // Initialize on page load
-        initializeUsers();
+        // Initialize Supabase
+        const supabaseUrl = 'https://tbntifrdpyzdtsofbclq.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRibnRpZnJkcHl6ZHRzb2ZiY2xxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQxOTYwOTYsImV4cCI6MjA3OTc3MjA5Nn0.GfHb3086SmNfrRYaNLp1JZVtlUf7SWyoCedclvf9D4w';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
         // Check if already logged in
         const currentSession = localStorage.getItem('gritSession');
@@ -233,34 +221,47 @@
         }
 
         // Handle login form submission
-        document.getElementById('login-form').addEventListener('submit', function(e) {
+        document.getElementById('login-form').addEventListener('submit', async function(e) {
             e.preventDefault();
 
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
             const errorMessage = document.getElementById('error-message');
 
-            // Get users from localStorage
-            const users = JSON.parse(localStorage.getItem('gritUsers') || '[]');
+            try {
+                // Get user from database
+                const { data: users, error } = await supabase
+                    .from('users')
+                    .select('*')
+                    .eq('email', email)
+                    .single();
 
-            // Find matching user
-            const user = users.find(u => u.email === email && u.password === password);
+                if (error || !users) {
+                    throw new Error('Invalid email or password');
+                }
 
-            if (user) {
+                // Verify password
+                const isValidPassword = await bcrypt.compare(password, users.password_hash);
+                
+                if (!isValidPassword) {
+                    throw new Error('Invalid email or password');
+                }
+
                 // Create session
                 const session = {
-                    userId: user.id,
-                    email: user.email,
-                    role: user.role,
+                    userId: users.id,
+                    email: users.email,
+                    role: users.role,
                     loginTime: new Date().toISOString()
                 };
                 localStorage.setItem('gritSession', JSON.stringify(session));
 
                 // Redirect to calculator
                 window.location.href = 'index.html';
-            } else {
+
+            } catch (error) {
                 // Show error message
-                errorMessage.textContent = 'Invalid email or password. Please try again.';
+                errorMessage.textContent = error.message || 'Login failed. Please try again.';
                 errorMessage.classList.add('show');
 
                 // Remove shake animation class after animation completes
