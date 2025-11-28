@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grit Payplan Calculator</title>
+    <title>Grit x Forge Payplan Calculator</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         * {
@@ -60,11 +60,19 @@
             font-size: 1.5em;
             white-space: nowrap;
             opacity: 0;
-            transition: opacity 0.3s ease;
+            transition: all 0.3s ease;
+            margin-left: 0;
         }
 
         .sidebar.expanded .sidebar-logo {
             opacity: 1;
+            margin-left: 0;
+        }
+
+        /* When sidebar is collapsed, hide logo to avoid hamburger menu interference */
+        .sidebar:not(.expanded) .sidebar-logo {
+            opacity: 0;
+            visibility: hidden;
         }
 
         .sidebar-toggle {
@@ -110,6 +118,29 @@
             color: #a10e02;
             border-left-color: #a10e02;
         }
+        
+        .sidebar-footer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 20px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .logout-btn {
+            background: none;
+            border: none;
+            width: 100%;
+            cursor: pointer;
+            color: rgba(255, 255, 255, 0.7);
+            transition: all 0.3s ease;
+        }
+        
+        .logout-btn:hover {
+            background: rgba(161, 14, 2, 0.2);
+            color: #ff6b6b;
+        }
 
         .nav-item svg {
             min-width: 20px;
@@ -127,23 +158,81 @@
             opacity: 1;
         }
 
-        /* Hamburger Menu for Mobile */
+        /* Hamburger menu icon */
         .hamburger {
-            display: none;
+            width: 20px;
+            height: 20px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .hamburger span {
+            display: block;
+            position: absolute;
+            height: 2px;
+            width: 100%;
+            background: white;
+            border-radius: 1px;
+            opacity: 1;
+            left: 0;
+            transform: rotate(0deg);
+            transition: .25s ease-in-out;
+        }
+
+        .hamburger span:nth-child(1) {
+            top: 3px;
+        }
+
+        .hamburger span:nth-child(2) {
+            top: 9px;
+        }
+
+        .hamburger span:nth-child(3) {
+            top: 15px;
+        }
+
+        /* Hamburger animation when expanded */
+        .sidebar.expanded .hamburger span:nth-child(1) {
+            top: 9px;
+            transform: rotate(135deg);
+        }
+
+        .sidebar.expanded .hamburger span:nth-child(2) {
+            opacity: 0;
+            left: -20px;
+        }
+
+        .sidebar.expanded .hamburger span:nth-child(3) {
+            top: 9px;
+            transform: rotate(-135deg);
+        }
+
+        /* Hamburger Menu Button (Desktop & Mobile) */
+        .mobile-hamburger {
+            display: flex;
             position: fixed;
-            top: 20px;
-            left: 20px;
+            top: 15px;
+            left: 15px;
             z-index: 1001;
             background: #2c3e50;
             border: none;
-            padding: 12px;
-            border-radius: 8px;
+            padding: 10px;
+            border-radius: 6px;
             cursor: pointer;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            width: 40px;
+            height: 40px;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s ease;
         }
 
-        .hamburger svg {
-            display: block;
+        /* Position adjusts based on sidebar state via JavaScript */
+
+        .mobile-hamburger .hamburger {
+            width: 18px;
+            height: 18px;
+            position: relative;
         }
 
         .container {
@@ -579,8 +668,8 @@
                 margin-left: 0;
             }
 
-            .hamburger {
-                display: block;
+            .mobile-hamburger {
+                display: flex;
             }
 
             /* Overlay when sidebar is open on mobile */
@@ -691,6 +780,15 @@
             background: linear-gradient(135deg, #7a0a01 0%, #5a0701 100%);
         }
 
+        .btn-crm {
+            background: linear-gradient(135deg, #28a745 0%, #20a038 100%);
+            margin-right: 10px;
+        }
+
+        .btn-crm:hover {
+            background: linear-gradient(135deg, #20a038 0%, #1e7b34 100%);
+        }
+
         @media (max-width: 768px) {
             .user-info-bar {
                 margin: -20px -20px 20px -20px;
@@ -719,10 +817,12 @@
 </head>
 <body>
     <!-- Hamburger Menu for Mobile -->
-    <button class="hamburger" onclick="toggleSidebar()">
-        <svg width="24" height="24" fill="white" viewBox="0 0 16 16">
-            <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"/>
-        </svg>
+    <button class="mobile-hamburger" onclick="toggleSidebar()">
+        <div class="hamburger" id="mobile-hamburger-icon">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
     </button>
 
     <!-- Sidebar Overlay for Mobile -->
@@ -731,11 +831,12 @@
     <!-- Sidebar Navigation -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <span class="sidebar-logo">GRIT</span>
             <button class="sidebar-toggle" onclick="toggleSidebar()">
-                <svg width="20" height="20" fill="white" viewBox="0 0 16 16">
-                    <path fill-rule="evenodd" d="M12 8a.5.5 0 0 1-.5.5H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H11.5a.5.5 0 0 1 .5.5z"/>
-                </svg>
+                <div class="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
             </button>
         </div>
         <nav class="sidebar-nav">
@@ -778,7 +879,34 @@
                 </svg>
                 <span>Summary</span>
             </div>
+            <!-- Separator for page navigation -->
+            <div style="height: 1px; background: rgba(255,255,255,0.1); margin: 20px 0;"></div>
+            
+            <!-- Page Navigation -->
+            <a href="crm.html" class="nav-item" id="nav-crm" style="display: none;">
+                <svg fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zM5 4h6a.5.5 0 0 1 0 1H5a.5.5 0 0 1 0-1zm-.5 2.5A.5.5 0 0 1 5 6h6a.5.5 0 0 1 0 1H5a.5.5 0 0 1-.5-.5zM5 8h6a.5.5 0 0 1 0 1H5a.5.5 0 0 1 0-1zm0 2h3a.5.5 0 0 1 0 1H5a.5.5 0 0 1 0-1z"/>
+                </svg>
+                <span>CRM Dashboard</span>
+            </a>
+            
+            <a href="admin.html" class="nav-item" id="nav-admin" style="display: none;">
+                <svg fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105-.872l-.1-.34zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z"/>
+                </svg>
+                <span>Admin Portal</span>
+            </a>
         </nav>
+        <!-- Logout button at bottom of sidebar -->
+        <div class="sidebar-footer">
+            <button onclick="logout()" class="nav-item logout-btn">
+                <svg fill="currentColor" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0v2z"/>
+                    <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708L12.707 4.5a.5.5 0 1 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.294 2.146a.5.5 0 0 0 .708.708l3.147-2.856z"/>
+                </svg>
+                <span>Logout</span>
+            </button>
+        </div>
     </div>
 
     <div class="container">
@@ -791,8 +919,8 @@
                 <span id="logged-in-role" class="user-role-badge"></span>
             </div>
             <div class="user-info-right">
+                <a href="crm.html" id="crm-link" class="btn-small btn-crm" style="display: none;">CRM Dashboard</a>
                 <a href="admin.html" id="admin-link" class="btn-small btn-admin" style="display: none;">Admin Portal</a>
-                <button onclick="logout()" class="btn-small">Logout</button>
             </div>
         </div>
 
@@ -1885,7 +2013,10 @@
         const currentSession = checkAuth();
         if (currentSession) {
             // Display user info
-            document.getElementById('logged-in-email').textContent = currentSession.email;
+            const displayName = currentSession.firstName && currentSession.lastName ? 
+                `${currentSession.firstName} ${currentSession.lastName}` : 
+                currentSession.email;
+            document.getElementById('logged-in-email').textContent = displayName;
             const roleBadge = document.getElementById('logged-in-role');
             roleBadge.textContent = currentSession.role;
             roleBadge.className = 'user-role-badge role-' + currentSession.role.toLowerCase();
@@ -1893,6 +2024,13 @@
             // Show admin portal link only for admins
             if (currentSession.role === 'Admin') {
                 document.getElementById('admin-link').style.display = 'inline-block';
+                document.getElementById('nav-admin').style.display = 'flex';
+            }
+
+            // Show CRM link for Veteran, Manager, and Admin users
+            if (['Veteran', 'Manager', 'Admin'].includes(currentSession.role)) {
+                document.getElementById('crm-link').style.display = 'inline-block';
+                document.getElementById('nav-crm').style.display = 'flex';
             }
 
             // Apply role-based tab visibility
@@ -2105,8 +2243,21 @@
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.querySelector('.sidebar-overlay');
+            const mobileHamburger = document.getElementById('mobile-hamburger-icon');
+            const hamburgerButton = document.querySelector('.mobile-hamburger');
 
             sidebar.classList.toggle('expanded');
+            
+            // Toggle mobile hamburger animation
+            if (mobileHamburger) {
+                if (sidebar.classList.contains('expanded')) {
+                    mobileHamburger.style.transform = 'rotate(90deg)';
+                } else {
+                    mobileHamburger.style.transform = 'rotate(0deg)';
+                }
+            }
+
+            // Hamburger stays in top-left corner at all times
 
             // Toggle overlay for mobile
             if (window.innerWidth <= 768) {
@@ -3219,7 +3370,7 @@
                 doc.text('GRIT x FORGE PayPlan Calculator', 105, 296, { align: 'center' });
             }
 
-            doc.save('GRIT_Personal_Commission_Report.pdf');
+            doc.save('Grit_x_Forge_Personal_Commission_Report.pdf');
         }
 
         function exportRecruiterPDF() {
@@ -3381,7 +3532,7 @@
                 doc.text('GRIT x FORGE PayPlan Calculator', 105, 296, { align: 'center' });
             }
 
-            doc.save('GRIT_Recruiter_Override_Report.pdf');
+            doc.save('Grit_x_Forge_Recruiter_Override_Report.pdf');
         }
 
         function exportManagementPDF() {
@@ -3544,7 +3695,7 @@
                 doc.text('GRIT x FORGE PayPlan Calculator', 105, 296, { align: 'center' });
             }
 
-            doc.save('GRIT_Management_Override_Report.pdf');
+            doc.save('Grit_x_Forge_Management_Override_Report.pdf');
         }
 
         function exportProfitSharePDF() {
@@ -3700,7 +3851,7 @@
                 doc.text('GRIT x FORGE PayPlan Calculator', 105, 296, { align: 'center' });
             }
 
-            doc.save('GRIT_Profit_Share_Report.pdf');
+            doc.save('Grit_x_Forge_Profit_Share_Report.pdf');
         }
 
         function exportStepBonusPDF() {
@@ -3862,7 +4013,7 @@
                 doc.text('GRIT x FORGE PayPlan Calculator', 105, 296, { align: 'center' });
             }
 
-            doc.save('GRIT_Step_Bonus_Report.pdf');
+            doc.save('Grit_x_Forge_Step_Bonus_Report.pdf');
         }
 
         function exportSummaryPDF() {
@@ -4277,7 +4428,7 @@
                 doc.text('GRIT x FORGE PayPlan Calculator', 105, 296, { align: 'center' });
             }
 
-            doc.save('GRIT_Compensation_Summary_Report.pdf');
+            doc.save('Grit_x_Forge_Compensation_Summary_Report.pdf');
         }
     </script>
 </body>

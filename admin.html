@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GRIT Payplan - Admin Portal</title>
+    <title>Grit x Forge Payplan - Admin Portal</title>
     <style>
         * {
             margin: 0;
@@ -104,6 +104,29 @@
             color: #a10e02;
             border-left-color: #a10e02;
         }
+        
+        .sidebar-footer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 20px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .logout-btn {
+            background: none;
+            border: none;
+            width: 100%;
+            cursor: pointer;
+            color: rgba(255, 255, 255, 0.7);
+            transition: all 0.3s ease;
+        }
+        
+        .logout-btn:hover {
+            background: rgba(161, 14, 2, 0.2);
+            color: #ff6b6b;
+        }
 
         .nav-item svg {
             min-width: 20px;
@@ -134,10 +157,62 @@
             border-radius: 8px;
             cursor: pointer;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            width: 44px;
+            height: 44px;
+            justify-content: center;
+            align-items: center;
         }
 
-        .hamburger svg {
+        .hamburger-icon {
+            width: 20px;
+            height: 20px;
+            position: relative;
+        }
+        
+        .hamburger-icon span {
             display: block;
+            position: absolute;
+            height: 2px;
+            width: 100%;
+            background: white;
+            border-radius: 1px;
+            opacity: 1;
+            left: 0;
+            transform: rotate(0deg);
+            transition: .25s ease-in-out;
+        }
+        
+        .hamburger-icon span:nth-child(1) {
+            top: 0px;
+        }
+        
+        .hamburger-icon span:nth-child(2),
+        .hamburger-icon span:nth-child(3) {
+            top: 8px;
+        }
+        
+        .hamburger-icon span:nth-child(4) {
+            top: 16px;
+        }
+        
+        .hamburger-icon.active span:nth-child(1) {
+            top: 8px;
+            width: 0%;
+            left: 50%;
+        }
+        
+        .hamburger-icon.active span:nth-child(2) {
+            transform: rotate(45deg);
+        }
+        
+        .hamburger-icon.active span:nth-child(3) {
+            transform: rotate(-45deg);
+        }
+        
+        .hamburger-icon.active span:nth-child(4) {
+            top: 8px;
+            width: 0%;
+            left: 50%;
         }
 
         .container {
@@ -541,9 +616,12 @@
 <body>
     <!-- Hamburger Menu for Mobile -->
     <button class="hamburger" onclick="toggleSidebar()">
-        <svg width="24" height="24" fill="white" viewBox="0 0 16 16">
-            <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"/>
-        </svg>
+        <div class="hamburger-icon">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
     </button>
 
     <!-- Sidebar Overlay for Mobile -->
@@ -552,7 +630,6 @@
     <!-- Sidebar Navigation -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <span class="sidebar-logo">GRIT</span>
             <button class="sidebar-toggle" onclick="toggleSidebar()">
                 <svg width="20" height="20" fill="white" viewBox="0 0 16 16">
                     <path fill-rule="evenodd" d="M12 8a.5.5 0 0 1-.5.5H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H11.5a.5.5 0 0 1 .5.5z"/>
@@ -566,19 +643,36 @@
                 </svg>
                 <span>Calculator</span>
             </a>
+            <a href="crm.html" class="nav-item">
+                <svg fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z"/>
+                    <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115l.094-.319z"/>
+                </svg>
+                <span>CRM Dashboard</span>
+            </a>
             <div class="nav-item active">
                 <svg fill="currentColor" viewBox="0 0 16 16">
-                    <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zM2.5 2a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zM1 10.5A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z"/>
+                    <path d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105-.872l-.1-.34zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z"/>
                 </svg>
                 <span>Admin Portal</span>
             </div>
         </nav>
+        <!-- Logout button at bottom of sidebar -->
+        <div class="sidebar-footer">
+            <button onclick="logout()" class="nav-item logout-btn">
+                <svg fill="currentColor" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0v2z"/>
+                    <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708L12.707 4.5a.5.5 0 1 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.294 2.146a.5.5 0 0 0 .708.708l3.147-2.856z"/>
+                </svg>
+                <span>Logout</span>
+            </button>
+        </div>
     </div>
 
     <div class="container">
         <div class="header">
             <div class="header-left">
-                <h1><span class="brand-highlight">GRIT</span> Admin Portal</h1>
+                <h1><span class="brand-highlight">Grit x Forge</span> Admin Portal</h1>
                 <p>Manage users and permissions</p>
             </div>
             <div class="header-right">
@@ -586,7 +680,6 @@
                     Logged in as: <strong id="current-user-email"></strong> (<span id="current-user-role"></span>)
                 </div>
                 <a href="index.html" class="btn btn-primary">Back to Calculator</a>
-                <button onclick="logout()" class="btn btn-secondary">Logout</button>
             </div>
         </div>
 
@@ -597,6 +690,14 @@
             <h2>Add New User</h2>
             <form id="add-user-form">
                 <div class="form-grid">
+                    <div class="form-group">
+                        <label for="new-first-name">First Name</label>
+                        <input type="text" id="new-first-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="new-last-name">Last Name</label>
+                        <input type="text" id="new-last-name" required>
+                    </div>
                     <div class="form-group">
                         <label for="new-email">Email Address</label>
                         <input type="email" id="new-email" required>
@@ -626,6 +727,7 @@
                 <table>
                     <thead>
                         <tr>
+                            <th>Name</th>
                             <th>Email</th>
                             <th>Role</th>
                             <th>Created</th>
@@ -649,6 +751,14 @@
             <form id="edit-user-form">
                 <input type="hidden" id="edit-user-id">
                 <div class="form-group">
+                    <label for="edit-first-name">First Name</label>
+                    <input type="text" id="edit-first-name" required>
+                </div>
+                <div class="form-group" style="margin-top: 15px;">
+                    <label for="edit-last-name">Last Name</label>
+                    <input type="text" id="edit-last-name" required>
+                </div>
+                <div class="form-group" style="margin-top: 15px;">
                     <label for="edit-email">Email Address</label>
                     <input type="email" id="edit-email" required>
                 </div>
@@ -705,7 +815,10 @@
         // Initialize page
         const currentSession = checkAuth();
         if (currentSession) {
-            document.getElementById('current-user-email').textContent = currentSession.email;
+            const displayName = currentSession.firstName && currentSession.lastName ? 
+                `${currentSession.firstName} ${currentSession.lastName}` : 
+                currentSession.email;
+            document.getElementById('current-user-email').textContent = displayName;
             document.getElementById('current-user-role').textContent = currentSession.role;
             loadUsers();
         }
@@ -726,21 +839,28 @@
                 const tbody = document.getElementById('users-table-body');
 
                 if (!users || users.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="4" class="empty-state">No users found</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No users found</td></tr>';
                     return;
                 }
 
-                tbody.innerHTML = users.map(user => `
-                    <tr>
-                        <td>${user.email}</td>
-                        <td><span class="role-badge role-${user.role.toLowerCase()}">${user.role}</span></td>
-                        <td>${new Date(user.created_at).toLocaleDateString()}</td>
-                        <td>
-                            <button class="btn btn-edit" onclick="editUser(${user.id})">Edit</button>
-                            <button class="btn btn-danger" onclick="deleteUser(${user.id}, '${user.email}')">Delete</button>
-                        </td>
-                    </tr>
-                `).join('');
+                tbody.innerHTML = users.map(user => {
+                    const fullName = user.first_name && user.last_name ? 
+                        `${user.first_name} ${user.last_name}` : 
+                        'No name set';
+                    
+                    return `
+                        <tr>
+                            <td><strong>${fullName}</strong></td>
+                            <td>${user.email}</td>
+                            <td><span class="role-badge role-${user.role.toLowerCase()}">${user.role}</span></td>
+                            <td>${new Date(user.created_at).toLocaleDateString()}</td>
+                            <td>
+                                <button class="btn btn-edit" onclick="editUser(${user.id})">Edit</button>
+                                <button class="btn btn-danger" onclick="deleteUser(${user.id}, '${user.email}')">Delete</button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
             } catch (error) {
                 showAlert('Failed to load users: ' + error.message, 'danger');
             }
@@ -750,6 +870,8 @@
         document.getElementById('add-user-form').addEventListener('submit', async function(e) {
             e.preventDefault();
 
+            const firstName = document.getElementById('new-first-name').value.trim();
+            const lastName = document.getElementById('new-last-name').value.trim();
             const email = document.getElementById('new-email').value.trim();
             const password = document.getElementById('new-password').value;
             const role = document.getElementById('new-role').value;
@@ -772,6 +894,8 @@
                     .from('users')
                     .insert([
                         {
+                            first_name: firstName,
+                            last_name: lastName,
                             email: email,
                             password_hash: password, // Plain text for now
                             role: role
@@ -808,6 +932,8 @@
                 }
 
                 document.getElementById('edit-user-id').value = user.id;
+                document.getElementById('edit-first-name').value = user.first_name || '';
+                document.getElementById('edit-last-name').value = user.last_name || '';
                 document.getElementById('edit-email').value = user.email;
                 document.getElementById('edit-password').value = '';
                 document.getElementById('edit-role').value = user.role;
@@ -829,6 +955,8 @@
             e.preventDefault();
 
             const userId = parseInt(document.getElementById('edit-user-id').value);
+            const firstName = document.getElementById('edit-first-name').value.trim();
+            const lastName = document.getElementById('edit-last-name').value.trim();
             const email = document.getElementById('edit-email').value.trim();
             const password = document.getElementById('edit-password').value;
             const role = document.getElementById('edit-role').value;
@@ -849,6 +977,8 @@
 
                 // Prepare update data
                 const updateData = {
+                    first_name: firstName,
+                    last_name: lastName,
                     email: email,
                     role: role
                 };
@@ -945,8 +1075,10 @@
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.querySelector('.sidebar-overlay');
+            const hamburgerIcon = document.querySelector('.hamburger-icon');
 
             sidebar.classList.toggle('expanded');
+            hamburgerIcon.classList.toggle('active');
 
             // Toggle overlay for mobile
             if (window.innerWidth <= 768) {

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GRIT Payplan - Login</title>
+    <title>Grit x Forge Payplan - Login</title>
     <style>
         * {
             margin: 0;
@@ -250,6 +250,8 @@
                 const session = {
                     userId: users.id,
                     email: users.email,
+                    firstName: users.first_name,
+                    lastName: users.last_name,
                     role: users.role,
                     loginTime: new Date().toISOString()
                 };
